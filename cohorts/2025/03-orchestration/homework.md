@@ -9,13 +9,15 @@ We'll use [the same NYC taxi dataset](https://www1.nyc.gov/site/tlc/about/tlc-tr
 You can use the same tool you used when completing the module,
 or choose a different one for your homework.
 
-What's the name of the orchestrator you chose? 
+What's the name of the orchestrator you chose?
+
 **Kestra**
 
 
 ## Question 2. Version
 
-What's the version of the orchestrator? 
+What's the version of the orchestrator?
+
 **v0.20.7**
 
 
@@ -59,8 +61,11 @@ tasks:
       import pandas as pd
       df = pd.read_parquet("data.parquet")
       print("Nombre de lignes :", len(df))
+```
+```bash
 2025-06-04 17:30:15.161Nombre de lignes : 3403766
 ```
+
 
 ## Question 4. Data preparation
 
