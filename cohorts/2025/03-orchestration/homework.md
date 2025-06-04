@@ -10,11 +10,13 @@ You can use the same tool you used when completing the module,
 or choose a different one for your homework.
 
 What's the name of the orchestrator you chose? 
+**Kestra**
 
 
 ## Question 2. Version
 
 What's the version of the orchestrator? 
+**v0.20.7**
 
 
 ## Question 3. Creating a pipeline
@@ -25,10 +27,41 @@ How many records did we load?
 
 - 3,003,766
 - 3,203,766
-- 3,403,766
+**- 3,403,766**
 - 3,603,766
 
 (Include a print statement in your code)
+---bash
+PS G:\Mon Drive\DataTalksClub\mlops-zoomcamp\cohorts\2025\03-orchestration> python preprocess.py
+Rows after filtering: 3403766
+---
+Now with Kestra as an orchestrator and flow named *q3_count_rows*
+---yaml
+id: q3_count_rows
+namespace: mlops.zoomcamp
+
+tasks:
+  - id: extract
+    type: io.kestra.plugin.core.http.Download
+    uri: https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-03.parquet
+
+  - id: count_rows
+    type: io.kestra.plugin.scripts.python.Script
+    containerImage: python:3.11-slim
+    inputFiles:
+      data.parquet: "{{ outputs.extract.uri }}"
+    script: |
+      import subprocess
+      subprocess.run(["pip", "install", "pandas", "pyarrow"], check=True)
+
+      import pandas as pd
+      df = pd.read_parquet("data.parquet")
+      print("Nombre de lignes :", len(df))
+---
+
+---bash
+2025-06-04 17:30:15.161Nombre de lignes : 3403766
+---
 
 ## Question 4. Data preparation
 
