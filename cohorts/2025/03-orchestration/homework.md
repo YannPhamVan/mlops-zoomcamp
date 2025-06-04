@@ -96,8 +96,40 @@ What's the size of the result?
 
 - 2,903,766
 - 3,103,766
-- 3,316,216 
+- **3,316,216**
 - 3,503,766
+
+```bash
+id: q4_data_preparation
+namespace: mlops.zoomcamp
+
+tasks:
+  - id: extract
+    type: io.kestra.plugin.core.http.Download
+    uri: https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-03.parquet
+
+  - id: filter_duration
+    type: io.kestra.plugin.scripts.python.Script
+    containerImage: python:3.11-slim
+    inputFiles:
+      data.parquet: "{{ outputs.extract.uri }}"
+    script: |
+      import subprocess
+      subprocess.run(["pip", "install", "pandas", "pyarrow"], check=True)
+
+      import pandas as pd
+      df = pd.read_parquet("data.parquet")
+      df['duration'] = df.tpep_dropoff_datetime - df.tpep_pickup_datetime
+      df.duration = df.duration.dt.total_seconds() / 60
+      df = df[(df.duration >= 1) & (df.duration <= 60)]
+      categorical = ['PULocationID', 'DOLocationID']
+      df[categorical] = df[categorical].astype(str)
+      print("Nombre de lignes :", len(df))
+```
+```bash
+2025-06-04 18:24:17.964filter_duration4ocg47y5sYKgrFNz81ToJl
+Nombre de lignes : 3316216
+```
 
 ## Question 5. Train a model
 
