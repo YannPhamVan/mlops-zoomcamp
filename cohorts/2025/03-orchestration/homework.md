@@ -37,7 +37,7 @@ PS G:\Mon Drive\DataTalksClub\mlops-zoomcamp\cohorts\2025\03-orchestration> pyth
 Rows after filtering: 3403766```
 
 Now with Kestra as an orchestrator and flow named *q3_count_rows*
-```yaml
+```bash
 id: q3_count_rows
 namespace: mlops.zoomcamp
 
@@ -57,10 +57,9 @@ tasks:
 
       import pandas as pd
       df = pd.read_parquet("data.parquet")
-      print("Nombre de lignes :", len(df))```
-```bash
-2025-06-04 17:30:15.161Nombre de lignes : 3403766
-```
+      print("Nombre de lignes :", len(df))
+2025-06-04 17:30:15.161Nombre de lignes : 3403766```
+
 ## Question 4. Data preparation
 
 Let's continue with pipeline creation.
