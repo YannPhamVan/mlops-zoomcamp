@@ -1,0 +1,51 @@
+id: q5_model_training
+namespace: mlops.zoomcamp
+
+tasks:
+  - id: extract
+    type: io.kestra.plugin.core.http.Download
+    uri: https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-03.parquet
+
+  - id: prepare_data
+    type: io.kestra.plugin.scripts.python.Script
+    containerImage: python:3.11-slim
+    inputFiles:
+      data.parquet: "{{ outputs.extract.uri }}"
+    outputFiles:
+      - filtered.parquet
+    script: |
+      import subprocess
+      subprocess.run(["pip", "install", "pandas", "pyarrow"], check=True)
+
+      import pandas as pd
+      df = pd.read_parquet("data.parquet")
+      df['duration'] = df.tpep_dropoff_datetime - df.tpep_pickup_datetime
+      df.duration = df.duration.dt.total_seconds() / 60
+      df = df[(df.duration >= 1) & (df.duration <= 60)]
+      df[['PULocationID', 'DOLocationID']] = df[['PULocationID', 'DOLocationID']].astype(object)
+      df[['trip_distance', 'duration', 'PULocationID', 'DOLocationID']].to_parquet("filtered.parquet", index=False)
+
+  - id: train_model
+    type: io.kestra.plugin.scripts.python.Script
+    containerImage: python:3.11-slim
+    inputFiles:
+      filtered.parquet: "{{ outputs.prepare_data.outputFiles['filtered.parquet'] }}"
+    script: |
+      import subprocess
+      subprocess.run(["pip", "install", "scikit-learn", "pandas", "pyarrow"], check=True)
+
+      import pandas as pd
+      from sklearn.feature_extraction import DictVectorizer
+      from sklearn.linear_model import LinearRegression
+
+      df = pd.read_parquet("filtered.parquet")
+
+      dv = DictVectorizer()
+      train_dicts = df[["trip_distance","PULocationID", "DOLocationID"]].to_dict(orient='records')
+      X_train = dv.fit_transform(train_dicts)
+      y_train = df["duration"]
+
+      lr = LinearRegression()
+      lr.fit(X_train, y_train)
+
+      print("Intercept:", lr.intercept_)
